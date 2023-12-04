@@ -1,11 +1,11 @@
 name: CDK Deployment
 
 on:
-  push:
+  pull_request:
     branches:
-        - main
-        - stg
-        - dev
+      - main
+      - stg
+      - dev
 
 jobs:
   deploy:
