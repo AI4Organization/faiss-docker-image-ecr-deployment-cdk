@@ -3,6 +3,7 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ecrDeploy from 'cdk-ecr-deployment';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
+import * as kms from 'aws-cdk-lib/aws-kms';
 import { DockerImageAsset, Platform } from 'aws-cdk-lib/aws-ecr-assets';
 import { FaissDockerImageEcrDeploymentCdkStackProps } from './FaissDockerImageEcrDeploymentCdkStackProps';
 
@@ -12,12 +13,19 @@ export class FaissDockerImageEcrDeploymentCdkStack extends cdk.Stack {
 
     super(scope, id, props);
 
+    const kmsKey = new kms.Key(this, `${props.appName}-${props.environment}-ECRRepositoryKmsKey`, {
+      enableKeyRotation: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      enabled: true,
+    });
+
     const ecrRepository = new ecr.Repository(this, `${props.appName}-${props.environment}-DockerImageEcrRepository`, {
       repositoryName: props.repositoryName,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteImages: true,
-      encryption: ecr.RepositoryEncryption.AES_256,
       imageScanOnPush: true,
+      encryption: ecr.RepositoryEncryption.KMS,
+      encryptionKey: kmsKey,
     });
 
     ecrRepository.addLifecycleRule({ maxImageAge: cdk.Duration.days(7), rulePriority: 1, tagStatus: ecr.TagStatus.UNTAGGED }); // delete images older than 7 days
