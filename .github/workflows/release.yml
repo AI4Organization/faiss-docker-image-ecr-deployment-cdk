@@ -1,0 +1,39 @@
+name: CDK Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - stg
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        repository: 'AI4Organization/faiss-backend-with-langchain-python-coreservices'
+        ref: ${{ github.ref }}
+        ssh-key: ${{ secrets.SSH_KEY }}
+
+    - name: Set up AWS CLI
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Install AWS CDK CLI
+      run: npm install -g aws-cdk
+
+    - name: CDK Synth
+      run: cdk synth
+
+    - name: CDK Bootstrap
+      run: cdk bootstrap
+
+    - name: CDK Deploy
+      run: cdk deploy
