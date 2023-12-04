@@ -1,21 +1,60 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
+
 import * as cdk from 'aws-cdk-lib';
+import * as dotenv from 'dotenv';
+import { IEnvTypes } from '../process-env-typed';
 import { FaissDockerImageEcrDeploymentCdkStack } from '../lib/faiss-docker-image-ecr-deployment-cdk-stack';
 
+dotenv.config(); // Load environment variables from .env file
 const app = new cdk.App();
-new FaissDockerImageEcrDeploymentCdkStack(app, 'FaissDockerImageEcrDeploymentCdkStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+const { CDK_DEFAULT_ACCOUNT: account, CDK_DEFAULT_REGION: region } = process.env;
 
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
+const cdkRegions = process.env.CDK_DEPLOY_REGIONS?.split(',') ?? [region]; // Parsing comma separated list of regions
+const environments = process.env.ENVIRONMENTS?.split(',') ?? ['dev']; // Parsing comma separated list of environments
 
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
-});
+const DEFAULT_IMAGE_VERSION = 'latest';
+
+/*
+ * Check if the environment variables are set
+ * @param args - Environment variables to check
+ * @throws Error if any of the environment variables is not set
+ * @returns void
+ * */
+function checkEnvVariables(...args: string[]) {
+  args.forEach((arg) => {
+    if (!process.env[arg]) {
+      throw new Error(`Environment variable ${arg} is not set yet. Please set it in .env file.`);
+    }
+  });
+}
+
+// check if the environment variables are set
+checkEnvVariables('ECR_REPOSITORY_NAME', 'APP_NAME');
+
+const envTypes: IEnvTypes = {
+  ECR_REPOSITORY_NAME: process.env.ECR_REPOSITORY_NAME ?? `faiss-docker-image-erc-repository`,
+  APP_NAME: process.env.APP_NAME ?? `faiss-vectordatabase`,
+  IMAGE_VERSION: process.env.IMAGE_VERSION ?? DEFAULT_IMAGE_VERSION,
+};
+
+for (const cdkRegion of cdkRegions) {
+  for (const environment of environments) {
+    new FaissDockerImageEcrDeploymentCdkStack(app, `FaissDockerImageEcrDeploymentCdkStack-${cdkRegion}-${environment}`, {
+      env: {
+        account,
+        region: cdkRegion,
+      },
+      tags: {
+        environment,
+      },
+      repositoryName: `${envTypes.ECR_REPOSITORY_NAME}-${environment}`,
+      appName: envTypes.APP_NAME,
+      imageVersion: envTypes.IMAGE_VERSION ?? DEFAULT_IMAGE_VERSION,
+      environment: environment
+    });
+  }
+}
+
+app.synth();
