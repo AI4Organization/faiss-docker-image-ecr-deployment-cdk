@@ -17,16 +17,16 @@ jobs:
         - name: Checkout repository
             uses: actions/checkout@v2
             with:
-            repository: 'AI4Organization/faiss-backend-with-langchain-python-coreservices'
-            ref: ${{ github.ref }}
-            ssh-key: ${{ secrets.SSH_KEY }}
+                repository: 'AI4Organization/faiss-backend-with-langchain-python-coreservices'
+                ref: ${{ github.ref }}
+                ssh-key: ${{ secrets.SSH_KEY }}
 
         - name: Set up AWS CLI
             uses: aws-actions/configure-aws-credentials@v1
             with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: ${{ secrets.AWS_REGION }}
+                aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                aws-region: ${{ secrets.AWS_REGION }}
 
         - name: Setup Node.js
             uses: actions/setup-node@v3
