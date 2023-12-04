@@ -3,15 +3,15 @@ name: CDK Deployment
 on:
   push:
     branches:
-      - main
-      - stg
-      - dev
+        - main
+        - stg
+        - dev
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false # Add 'fail-fast: false' to the 'jobs.deploy.strategy' to prevent cancelling all runs if one fails, which is useful for parallel deployments.
+        fail-fast: false # Add 'fail-fast: false' to the 'jobs.deploy.strategy' to prevent cancelling all runs if one fails, which is useful for parallel deployments.
 
     steps:
         - name: Checkout repository
