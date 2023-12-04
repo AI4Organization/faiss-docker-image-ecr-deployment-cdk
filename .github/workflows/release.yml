@@ -1,4 +1,4 @@
-name: deployment with aws cdk & aws cli
+name: Deployment with AWS CLI & AWS CDK
 
 on:
   pull_request:
