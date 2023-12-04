@@ -1,54 +1,69 @@
 name: CDK Deployment
 
 on:
-  push:
+  pull_request:
     branches:
-        - main
-        - stg
-        - dev
+      - main
+      - stg
+      - dev
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     strategy:
-        fail-fast: false # Add 'fail-fast: false' to the 'jobs.deploy.strategy' to prevent cancelling all runs if one fails, which is useful for parallel deployments.
+      fail-fast: false # Add 'fail-fast: false' to the 'jobs.deploy.strategy' to prevent cancelling all runs if one fails, which is useful for parallel deployments.
 
     steps:
-        - name: Checkout repository
-            uses: actions/checkout@v2
-            with:
-            repository: 'AI4Organization/faiss-backend-with-langchain-python-coreservices'
-            ref: ${{ github.ref }}
-            ssh-key: ${{ secrets.SSH_KEY }}
+      - name: Checkout repository
+        uses: actions/checkout@v2.3.4 # To use a different version of the GitHub action instead of using the latest one. This is to ensure that your workflow doesn't break due to changes in the action.
+        with:
+          repository: 'AI4Organization/faiss-backend-with-langchain-python-coreservices'
+          ref: ${{ github.ref }}
+          ssh-key: ${{ secrets.SSH_KEY }}
 
-        - name: Set up AWS CLI
-            uses: aws-actions/configure-aws-credentials@v1
-            with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: ${{ secrets.AWS_REGION }}
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1.5.0 # It's recommended to use a specific version of the GitHub action instead of using the latest one. This is to ensure that your workflow doesn't break due to changes in the action.
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-        - name: Setup Node.js
-            uses: actions/setup-node@v3
-            with:
-                node-version: 20.x
+      - name: Setup Node.js
+        uses: actions/setup-node@v3.2.0 # To use a different version of Node.js, replace '3.2.0' with the version you want and remove the 'with' section.
+        with:
+          node-version: 20.x
 
-        - name: Install dependencies
-            run: npm install
-            continue-on-error: false
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-deps-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-deps
 
-        - name: Install AWS CDK CLI
-            run: npm install -g aws-cdk
-            continue-on-error: false
+      - name: Cache AWS CDK CLI
+        uses: actions/cache@v2
+        with:
+          path: /usr/local/lib/node_modules
+          key: ${{ runner.os }}-node-cdk
+          restore-keys: |
+            ${{ runner.os }}-node-cdk
+      - name: Install AWS CDK CLI
+        run: npm install -g aws-cdk
+        continue-on-error: false
 
-        - name: CDK Synth
-            run: cdk synth
-            continue-on-error: false
+      - name: CDK Synth
+        run: cdk synth
+        continue-on-error: false
 
-        - name: CDK Bootstrap
-            run: cdk bootstrap
-            continue-on-error: false
+      - name: CDK Bootstrap
+        run: cdk bootstrap
+        continue-on-error: false
 
-        - name: CDK Deploy
-            run: cdk deploy
-            continue-on-error: false
+      - name: CDK Deploy
+        run: cdk deploy
+        continue-on-error: false
+
+      - name: Cleanup resources
+        run: echo "Add your cleanup commands here"
+        continue-on-error: true
