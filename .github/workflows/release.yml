@@ -1,4 +1,4 @@
-name: CDK Deployment
+name: deployment with aws cdk & aws cli
 
 on:
   pull_request:
@@ -11,13 +11,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false # Add 'fail-fast: false' to the 'jobs.deploy.strategy' to prevent cancelling all runs if one fails, which is useful for parallel deployments.
+      matrix:
+        node-version: [20.x]
+      fail-fast: false # fail all builds if one fails
 
     steps:
-      - name: Checkout code
+      - name: Checkout The Code
         uses: actions/checkout@v2
 
-      - name: Checkout services repository
+      - name: Checkout Core Services Repository
         uses: actions/checkout@v2
         with:
           repository: 'AI4Organization/faiss-backend-with-langchain-python-coreservices'
@@ -25,7 +27,7 @@ jobs:
           ssh-key: ${{ secrets.SSH_KEY }}
           path: coreservices
 
-      - name: Set up AWS CLI
+      - name: Set Up AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -37,23 +39,27 @@ jobs:
         with:
           node-version: 20.x
 
-      - name: Cache dependencies
+      - name: Cache Dependencies
         uses: actions/cache@v2
         with:
-          path: ~/.npm
+          path: |
+            ~/.npm
+            **/node_modules
           key: ${{ runner.os }}-node-deps-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-deps-
 
-      - name: Cache AWS CDK CLI
+      - name: Cache CDK CLI
         uses: actions/cache@v2
         with:
-          path: /usr/local/lib/node_modules
-          key: ${{ runner.os }}-node-cdk
+          path: |
+            ~/.cdk
+            **/cdk.out
+          key: ${{ runner.os }}-node-cdk-${{ hashFiles('**/cdk.json') }}
           restore-keys: |
             ${{ runner.os }}-node-cdk-
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm ci
         continue-on-error: false
 
