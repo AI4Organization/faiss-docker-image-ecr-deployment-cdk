@@ -1,0 +1,54 @@
+name: CDK Deployment
+
+on:
+  push:
+    branches:
+        - main
+        - stg
+        - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+        fail-fast: false # Add 'fail-fast: false' to the 'jobs.deploy.strategy' to prevent cancelling all runs if one fails, which is useful for parallel deployments.
+
+    steps:
+        - name: Checkout repository
+            uses: actions/checkout@v2
+            with:
+            repository: 'AI4Organization/faiss-backend-with-langchain-python-coreservices'
+            ref: ${{ github.ref }}
+            ssh-key: ${{ secrets.SSH_KEY }}
+
+        - name: Set up AWS CLI
+            uses: aws-actions/configure-aws-credentials@v1
+            with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ secrets.AWS_REGION }}
+
+        - name: Setup Node.js
+            uses: actions/setup-node@v3
+            with:
+                node-version: 20.x
+
+        - name: Install dependencies
+            run: npm install
+            continue-on-error: false
+
+        - name: Install AWS CDK CLI
+            run: npm install -g aws-cdk
+            continue-on-error: false
+
+        - name: CDK Synth
+            run: cdk synth
+            continue-on-error: false
+
+        - name: CDK Bootstrap
+            run: cdk bootstrap
+            continue-on-error: false
+
+        - name: CDK Deploy
+            run: cdk deploy
+            continue-on-error: false
