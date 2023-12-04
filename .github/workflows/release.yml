@@ -52,3 +52,7 @@ jobs:
         - name: CDK Deploy
           run: cdk deploy
           continue-on-error: false
+
+        - name: Cleanup resources
+          run: echo "Add your cleanup commands here"
+          continue-on-error: true
