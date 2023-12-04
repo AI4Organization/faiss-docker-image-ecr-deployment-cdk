@@ -12,28 +12,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-      with:
-        repository: 'AI4Organization/faiss-backend-with-langchain-python-coreservices'
-        ref: ${{ github.ref }}
-        ssh-key: ${{ secrets.SSH_KEY }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          repository: 'AI4Organization/faiss-backend-with-langchain-python-coreservices'
+          ref: ${{ github.ref }}
+          ssh-key: ${{ secrets.SSH_KEY }}
 
-    - name: Set up AWS CLI
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Install AWS CDK CLI
-      run: npm install -g aws-cdk
+      - name: Install AWS CDK CLI
+        run: npm install -g aws-cdk
+        continue-on-error: false
 
-    - name: CDK Synth
-      run: cdk synth
+      - name: CDK Synth
+        run: cdk synth
+        continue-on-error: false
 
-    - name: CDK Bootstrap
-      run: cdk bootstrap
+      - name: CDK Bootstrap
+        run: cdk bootstrap
+        continue-on-error: false
 
-    - name: CDK Deploy
-      run: cdk deploy
+      - name: CDK Deploy
+        run: cdk deploy
+        continue-on-error: false
