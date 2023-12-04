@@ -20,6 +20,7 @@ jobs:
           repository: 'AI4Organization/faiss-backend-with-langchain-python-coreservices'
           ref: ${{ github.ref }}
           ssh-key: ${{ secrets.SSH_KEY }}
+          path: coreservices
 
       - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v1.5.0 # It's recommended to use a specific version of the GitHub action instead of using the latest one. This is to ensure that your workflow doesn't break due to changes in the action.
