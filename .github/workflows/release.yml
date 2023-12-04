@@ -37,20 +37,17 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-deps-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-global-ci
-
-      - name: Install dependencies
-        run: npm ci
-        continue-on-error: false
+            ${{ runner.os }}-node-deps
 
       - name: Cache AWS CDK CLI
         uses: actions/cache@v2
         with:
           path: /usr/local/lib/node_modules
-          key: ${{ runner.os }}-node-global
-
+          key: ${{ runner.os }}-node-cdk
+          restore-keys: |
+            ${{ runner.os }}-node-cdk
       - name: Install AWS CDK CLI
         run: npm install -g aws-cdk
         continue-on-error: false
